@@ -110,37 +110,8 @@ int main()
     // Parse the packet
     if (transferred == sizeof(packet)) {
       // Check for special keys first
-      //// Escape
-      if (packet.keycode[0] == 0x29) { /* ESC pressed? */
-        int retToZ = 0;
-        do {
-            libusb_interrupt_transfer(keyboard, endpoint_address,
-			      (unsigned char *) &packet, sizeof(packet),
-			      &transferred, 0);
-			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
-	    } while (!retToZ);
-	    break;
-      }
-      //// Enter
-      if (packet.keycode[0] == 0x28) {
-        int retToZ = 0;
-        do {
-            libusb_interrupt_transfer(keyboard, endpoint_address,
-			      (unsigned char *) &packet, sizeof(packet),
-			      &transferred, 0);
-			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
-	    } while (!retToZ);
-        send_input(input, sockfd);
-        strcpy(echo, "<Me> ");
-        strcat(echo, input);
-        fbputpacket(echo, &top_line_pos);
-        memset(input, 0, INPUT_SIZE);
-        keyRow = MAX_SCREEN_Y + 1;
-        keyCol = 0;
-        fbclearlines(MAX_SCREEN_Y + 1, MAX_SCREEN_Y + 3);
-        continue;
-      }
-      //// Left
+      
+      //// LeftArrow
       if (packet.keycode[0] == 0x50) {
         int retToZ = 0;
         do {
@@ -159,7 +130,7 @@ int main()
         print_input(input, NULL, NULL);
         continue;
       }
-      //// Right
+      //// RightArrow
       if (packet.keycode[0] == 0x4f) {
         int retToZ = 0;
         do {
@@ -178,154 +149,45 @@ int main()
         print_input(input, NULL, NULL);
         continue;
       }
-      //// Backspace (2a) / Delete (4c)
-      if (packet.keycode[0] == 0x2a || packet.keycode[0] == 0x4c) {
+      //// DownArrow
+      if (packet.keycode[0] == 0x51) {
         int retToZ = 0;
-	    int pos = (keyRow - (MAX_SCREEN_Y + 1)) * 128 + keyCol;
-	    if (packet.keycode[0] == 0x2a) {
-    	    if (!(keyRow == MAX_SCREEN_Y + 1 && keyCol == 0)) {
-	            pos--;
-        	    if (keyCol == 0) {
-        	        keyRow--;
-        	        keyCol = 127;
-        	    } else
-        	        keyCol--;
-    	    } else {
-                do {
-                    libusb_interrupt_transfer(keyboard, endpoint_address,
-        			      (unsigned char *) &packet, sizeof(packet),
-        			      &transferred, 100);
-        			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
-        	    } while (!retToZ);
-        	    continue;
-    	    }
-	    }
         do {
             libusb_interrupt_transfer(keyboard, endpoint_address,
 			      (unsigned char *) &packet, sizeof(packet),
 			      &transferred, 100);
 			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
 	    } while (!retToZ);
-	    printf("pos: %d\n", pos);
-	    clear_pos(pos, input);
+	    if (keyRow == MAX_SCREEN_Y + 1 && keyCol == 0)
+	        continue;
+	    if (keyCol == 0) {
+	        keyRow--;
+	        keyCol = 127;
+	    } else
+	        keyCol--;
         print_input(input, NULL, NULL);
         continue;
       }
-      
-      // Parse the key being pressed
-      int offset; 
-      int dec = 0;
-      int retToZ = 0;
-      do {
-      if( packet.keycode[0] >= 0x04 && packet.keycode[0] <= 0x1D){ /* shift letters */
-    	offset = packet.keycode[0] - 0x04;
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		offset  = offset - 0x20; 
-    	}
-    
-    	//printf("offset: %x %d\n", packet.keycode[0], offset);
-    	dec =97 + offset; 
-    	
-    	
+      //// UpArrow
+      if (packet.keycode[0] == 0x52) {
+        int retToZ = 0;
+        do {
+            libusb_interrupt_transfer(keyboard, endpoint_address,
+			      (unsigned char *) &packet, sizeof(packet),
+			      &transferred, 100);
+			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
+	    } while (!retToZ);
+	    if (keyRow == MAX_SCREEN_Y + 1 && keyCol == 0)
+	        continue;
+	    if (keyCol == 0) {
+	        keyRow--;
+	        keyCol = 127;
+	    } else
+	        keyCol--;
+        print_input(input, NULL, NULL);
+        continue;
       }
-      else if( packet.keycode[0] >= 0x1E && packet.keycode[0]<= 0x22){ /* shift 1, 2, 3, 4, 5*/
-    	offset = packet.keycode[0] - 0x1E;
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		offset = offset - 0x10; 
-    	}
-    	
-    	//printf("offset: %d", offset);
-    	dec = 49 + offset;
-    	
-    	if ((packet.modifiers == 0x02 || packet.modifiers == 0x20) && packet.keycode[0] == 0x1f)
-    	    dec = 64;
-      }
-      else if( packet.keycode[0] >= 0x24 && packet.keycode[0] <=0x26){ /* 7, 8, 9*/
-    	offset = packet.keycode[0] - 0x24;
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		offset = offset - 0x11; 
-    	}
-    	
-    	//printf("offset: %d", offset);
-    	dec = 55 + offset; 
-      }
-      else if( packet.keycode[0] == 0x23){ /* 6*/
-    	dec = 54; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		dec = 94;  
-    	}
-    	
-    	
-      }
-      else if( packet.keycode[0] == 0x2c) // space
-        dec=32;
-      else if( packet.keycode[0] == 0x27){ /* shift 0 */
-    	dec = 48; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		dec = 41; 
-    	}
-      }
-      else if( packet.keycode[0] >= 0x2F && packet.keycode[0] <= 0x31){ /* [ ] \  */
-    	offset = packet.keycode[0] - 0x2F; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		offset = offset + 0x20; 
-    	}
-    	dec = 91 + offset; 
-    	if (packet.keycode[0] == 0x31)
-    	    dec--;
-    	else if (packet.keycode[0] == 0x30)
-    	    dec++;
-      }
-      else if( packet.keycode[0]  == 0x37 || packet.keycode[0] == 0x38){ /* . / */
-    	offset = packet.keycode[0] - 0x37; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		offset = offset + 16; 
-    	}
-    	dec = 46 + offset; 
-      }
-      
-      else if( packet.keycode[0] == 0x36){ /* < */
-    	dec = 44; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		dec = 60; 
-    	}
-      }
-      
-      else if( packet.keycode[0] == 0x34){ /* " */
-    	dec = 39; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		dec = 34; 
-    	}
-      }
-      else if( packet.keycode[0] == 0x33){ /* ; */
-    	dec = 59; 
-    	if( packet.modifiers == 0x02 || packet.modifiers == 0x20){
-    		dec = 58; 
-    	}
-      }
-      else if (packet.keycode[0] == 0x35) {
-            dec = 96;
-            if (packet.modifiers == 0x02 || packet.modifiers == 0x20)
-                dec = 126;
-        }
-
-        else if (packet.keycode[0] == 0x2d) {
-            dec = 45;
-            if (packet.modifiers == 0x02 || packet.modifiers == 0x20)
-                dec = 95;
-        }
-
-        else if (packet.keycode[0] == 0x2e) {
-            dec = 61;
-            if (packet.modifiers == 0x02 || packet.modifiers == 0x20)
-                dec = 43;
-        }
-        libusb_interrupt_transfer(keyboard, endpoint_address,
-		      (unsigned char *) &packet, sizeof(packet),
-		      &transferred, 100);
-		retToZ = packet.keycode[0] == 0;
-      } while (!retToZ);
-      char cdec = (char)(dec);
+     
       
       // Print the line
       sprintf(keycode, "%c", cdec);
@@ -355,12 +217,6 @@ int main()
     }
   }
 
-  /* Terminate the network thread */
-  pthread_cancel(network_thread);
-
-  /* Wait for the network thread to finish */
-  pthread_join(network_thread, NULL);
-
   return 0;
 }
 
@@ -377,12 +233,6 @@ void clear_pos(int pos, char *buf)
     printf("buf: %s\n", buf);
     if (!overwritten)
         buf[pos] = 0;
-}
-
-void send_input(char *input, int sockfd)
-{
-    int len = strlen(input);
-    write(sockfd, input, len);
 }
 
 void print_input(char *input, int *cRow, int *cCol)
@@ -403,18 +253,4 @@ void print_input(char *input, int *cRow, int *cCol)
         *cCol = .,mncol > 127 ? 127 : col;
 }
 
-void *network_thread_f(void *ignored)
-{
-  char recvBuf[BUFFER_SIZE] = {0};
-  int n;
-  /* Receive data */
-  while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
-    recvBuf[n] = '\0';
-    printf("%s", recvBuf);
-    fbputpacket(recvBuf, &top_line_pos); //wrapping here for screen
-    memset(recvBuf, 0, BUFFER_SIZE);
-  }
-
-  return NULL;
-}
 
