@@ -8,15 +8,12 @@
 #include "usbkeyboard.h"
 #include <pthread.h>
 
-#define IPADDR(a,b,c,d) (htonl(((a)<<24)|((b)<<16)|((c)<<8)|(d)))
-#define SERVER_HOST IPADDR(192,168,1,1)
-#define SERVER_PORT htons(42000)
-
 #define BUFFER_SIZE 128
 #define INPUT_SIZE 2 * 128 + 1
 #define ROW_1 45
 #define ROW_2 46
 #define COL_NUM(int col){ 50*(col-1)+30 }
+unsigned char CUR_CURSOR_STATE[2]={}; //{row, col}
 
 // By Mark Aligbe (ma2799) and Sabina Smajlaj (ss3912)
 
@@ -62,17 +59,17 @@ int main()
     }
     updatedial(420, COL_NUM(i))
   }
-
+  //Initialize current cursor state for first column
+  CUR_CURSOR_STATE={420, 30};
 
   /* Open the keyboard */
   if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
     fprintf(stderr, "Did not find a keyboard\n");
     exit(1);
   }
-    
 
   // The position of the cursor
-  int keyRow = MAX_SCREEN_Y + 1, keyCol = 0;
+  int keyRow = 420, keyCol = 30;
   // The array holding the user input
   char input[INPUT_SIZE] = {0};
   char echo[INPUT_SIZE + 5] = {0};
@@ -120,13 +117,15 @@ int main()
 			      &transferred, 100);
 			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
 	    } while (!retToZ);
-	    if (keyRow == MAX_SCREEN_Y + 1 && keyCol == 0)
-	        continue;
-	    if (keyCol == 0) {
-	        keyRow--;
-	        keyCol = 127;
-	    } else
-	        keyCol--;
+	    if (CUR_CURSOR_STATE[1] == 580) //where does keycol get updated?
+	        continue; //stay there
+	    if (keyCol != 580) {
+	        keyCol= keyCol + 30; 
+	        CUR_CURSOR_STATE[1] = keyCol;
+	    }
+	    else {
+	        continue; 
+	    }
         print_input(input, NULL, NULL);
         continue;
       }
@@ -139,14 +138,13 @@ int main()
 			      &transferred, 100);
 			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
 	    } while (!retToZ);
-	    if (keyRow == MAX_SCREEN_Y + 2 && keyCol == 127)
-	        continue;
-	    if (keyCol == 127) {
-	        keyRow++;
-	        keyCol = 0;
-	    } else
-	        keyCol++;
-        print_input(input, NULL, NULL);
+	    if (keyCol != 30) //where does keycol get updated?
+	        keyCol = keyCol - 30;
+	        CUR_CURSOR_STATE[1] = keyCol;
+	    else{
+	        continue; 
+	    }
+	    print_input(input, NULL, NULL);
         continue;
       }
       //// DownArrow
@@ -158,13 +156,12 @@ int main()
 			      &transferred, 100);
 			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
 	    } while (!retToZ);
-	    if (keyRow == MAX_SCREEN_Y + 1 && keyCol == 0)
+	    if (keyRow == 470)
 	        continue;
-	    if (keyCol == 0) {
-	        keyRow--;
-	        keyCol = 127;
-	    } else
-	        keyCol--;
+	    else if (keyRow != 470) {
+	        keyRow= keyRow - 4;
+	        CUR_CURSOR_STATE[0] = keyRow;
+	    }
         print_input(input, NULL, NULL);
         continue;
       }
@@ -177,13 +174,12 @@ int main()
 			      &transferred, 100);
 			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
 	    } while (!retToZ);
-	    if (keyRow == MAX_SCREEN_Y + 1 && keyCol == 0)
+	     if (keyRow == 370)
 	        continue;
-	    if (keyCol == 0) {
-	        keyRow--;
-	        keyCol = 127;
-	    } else
-	        keyCol--;
+	    else if (keyRow != 370) {
+	        keyRow= keyRow + 4;
+	        CUR_CURSOR_STATE[0] = keyRow;
+	    }
         print_input(input, NULL, NULL);
         continue;
       }
@@ -235,6 +231,7 @@ void clear_pos(int pos, char *buf)
         buf[pos] = 0;
 }
 
+//displaying char *input onto screen
 void print_input(char *input, int *cRow, int *cCol)
 {
     fbclearlines(MAX_SCREEN_Y + 1, MAX_SCREEN_Y + MAX_INPUT_HEIGHT + 1);

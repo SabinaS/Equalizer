@@ -15,5 +15,7 @@ extern void fbputchar(char, int, int);
 extern void fbputs(const char *, int, int);
 extern void fbclearlines(int, int);
 extern void fbputpacket(char *, int *);
+extern void updatedial(int, int);
+extern char* dials; 
 
 #endif
