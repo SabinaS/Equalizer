@@ -31,18 +31,18 @@ module VGA_BAND(input logic      clk,
 
     always_ff @(posedge clk)
         if (reset) begin
-            dial31 <= 10'd058;
-            dial72 <= 10'd058;
-            dial150 <= 10'd058;
-            dial250 <= 10'd058;
-            dial440 <= 10'd058; 
-            dial630 <= 10'd058;
-            dial1000 <= 10'd058;
-            dial2500 <= 10'd058;
-            dial5000 <= 10'd058;
-            dial8000 <= 10'd058;
-            dial14000 <= 10'd058;
-            dial20000 <= 10'd058;
+            dial31 <= 10'd412;
+            dial72 <= 10'd412;
+            dial150 <= 10'd412;
+            dial250 <= 10'd412;
+            dial440 <= 10'd412; 
+            dial630 <= 10'd412;
+            dial1000 <= 10'd412;
+            dial2500 <= 10'd412;
+            dial5000 <= 10'd412;
+            dial8000 <= 10'd412;
+            dial14000 <= 10'd412;
+            dial20000 <= 10'd412;
              
         end else if (chipselect && write)
             case (address)

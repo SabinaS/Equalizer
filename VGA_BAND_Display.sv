@@ -80,7 +80,7 @@ module equalizer_values_display(
 
    assign VGA_SYNC_n = 1; // For adding sync to video signals; not used for VGA
    
-   // Horizontal active: 0 to 1279     Vertical active: 0 to 479
+   // Horizontal active: 0 to 1279     Vertical active: 0 to89
    // 101 0000 0000  1280           01 1110 0000  480
    // 110 0011 1111  1599           10 0000 1100  524
    assign VGA_BLANK_n = !( hcount[10] & (hcount[9] | hcount[8]) ) &
@@ -143,27 +143,15 @@ module equalizer_values_display(
    always_comb begin
       {VGA_R, VGA_G, VGA_B} = {8'h0, 8'h0, 8'd255)}; // Blue
       
-        if (hcount[10:1] >= xCent) begin
-            if (vcount[8:0] >= yCent) begin
-                x2 = hcount[10:1] - xCent;
-                y2 = vcount[8:0] - yCent;
-            end else if (vcount[8:0] < yCent) begin
-                x2 = hcount[10:1] - xCent;
-                y2 = vcount[8:0] - yCent;
-            end
-            if ((x2 * x2) + (y2 * y2) < r2)
-                {VGA_R, VGA_G, VGA_B} = {8'd200, 8'h0, 8'h0};
-        end else if (hcount[10:1] < xCent) begin
-            if (vcount[8:0] >= yCent) begin
-                x2 = xCent - hcount[10:1];
-                y2 = vcount[8:0] - yCent;
-            end else if (vcount[8:0] < yCent) begin
-                x2 = xCent - hcount[10:1];
-                y2 = yCent - vcount[8:0];
-            end
-            if ((x2 * x2) + (y2 * y2) < r2)
-                {VGA_R, VGA_G, VGA_B} = {8'd200, 8'h0, 8'h0};
-        end
-   end  
+        
+	if (vcount[8:0] > 10'd412) begin
+		y2 = vcount[8:0] - yCent;
+	end else if (vcount[8:0] < 10'd412) begin
+		x2 = hcount[10:1] - xCent;
+		y2 = vcount[8:0] - yCent;
+	end
+	if ((x2 * x2) + (y2 * y2) < r2)
+		{VGA_R, VGA_G, VGA_B} = {8'd200, 8'h0, 8'h0};
+   	end  
    
 endmodule // VGA_BALL_Display
