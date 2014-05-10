@@ -53,12 +53,14 @@ int main()
   // Clear the screen before starting
   fbclearlines(0, 47);
   
-  /* Draw 12 bands at distinct frequencies as well as the dials in the middle of the bands */
+ /* init: Draw 12 bands at distinct frequencies as well as 
+  *the dials in the middle of the bands 
+  */
   for (i = 1 ; i < 13 ; i++) {
     for (row = 470; row > 370; row--){
 	    fbputchar('I', row, COL_NUM(i));
     }
-    updatedial(420, COL_NUM(i)-1)
+    updatedial(420, COL_NUM(i))
   }
 
 
@@ -96,6 +98,7 @@ int main()
         }
         continue;
     }
+    //Put cursor at top initially 
     if (cursorState == 1) {
         fbputchar(input[(keyRow - (MAX_SCREEN_Y + 1)) * 128 + keyCol] == 0 ? 32 : input[(keyRow - (MAX_SCREEN_Y + 1)) * 128 + keyCol], keyRow, keyCol);
         cursorState = -1;

@@ -90,7 +90,8 @@ void fbputchar(char c, int row, int col)
 /*
  * updates the location of the dial
  * TODO: update the row location from each dial in the dial[] array depending on the col we're given here
- */
+  *note: col remains static for each dial
+  */
 
 void updatedial(int row, int col)
 {
