@@ -30,10 +30,8 @@ struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
 
 void print_input(char *, int *, int *);
-void send_input(char *, int);
 void clear_pos(int, char *);
 
-int top_line_pos = 2;
 
 int main()
 {
@@ -126,7 +124,6 @@ int main()
 	    else {
 	        continue; 
 	    }
-        print_input(input, NULL, NULL);
         continue;
       }
       //// RightArrow
@@ -144,7 +141,6 @@ int main()
 	    else{
 	        continue; 
 	    }
-	    print_input(input, NULL, NULL);
         continue;
       }
       //// DownArrow
@@ -161,8 +157,8 @@ int main()
 	    else if (keyRow != 470) {
 	        keyRow= keyRow - 4;
 	        CUR_CURSOR_STATE[0] = keyRow;
+	        updatedial(keyRow, keyCol);
 	    }
-        print_input(input, NULL, NULL);
         continue;
       }
       //// UpArrow
@@ -179,8 +175,8 @@ int main()
 	    else if (keyRow != 370) {
 	        keyRow= keyRow + 4;
 	        CUR_CURSOR_STATE[0] = keyRow;
+	        updatedial(keyRow, keyCol);
 	    }
-        print_input(input, NULL, NULL);
         continue;
       }
      
@@ -201,15 +197,6 @@ int main()
       strcpy(input, inBegin);
       strcat(input, inEnd);
       //strncat(input, keycode, INPUT_SIZE - strlen(input) - 1);
-      printf("input len: %d\n", strlen(input));
-      if (!(keyRow == MAX_SCREEN_Y + 2 && keyCol == 127)) {
-        if (keyCol == 127) {
-            keyRow++;
-            keyCol = 0;
-        } else
-            keyCol++;
-      }
-      print_input(input, NULL, NULL);
     }
   }
 
@@ -231,23 +218,6 @@ void clear_pos(int pos, char *buf)
         buf[pos] = 0;
 }
 
-//displaying char *input onto screen
-void print_input(char *input, int *cRow, int *cCol)
-{
-    fbclearlines(MAX_SCREEN_Y + 1, MAX_SCREEN_Y + MAX_INPUT_HEIGHT + 1);
-    int col = 0, row = 0;
-    while (*input != 0) {
-        if (col == 128 && row < 1) {
-            col = 0;
-            row++;
-        }
-        fbputchar(*input, row + MAX_SCREEN_Y + 1, col++);
-        input++;
-    }
-    if (cRow != NULL)
-        *cRow = MAX_SCREEN_Y + (row > 1 ? 1 : row) + 1;
-    if (cCol != NULL)
-        *cCol = .,mncol > 127 ? 127 : col;
-}
+
 
 
