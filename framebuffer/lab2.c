@@ -6,14 +6,14 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "usbkeyboard.h"
-#include <pthread.h>
 
 #define BUFFER_SIZE 128
 #define INPUT_SIZE 2 * 128 + 1
 #define ROW_1 45
 #define ROW_2 46
-#define COL_NUM(int col){ 50*(col-1)+30 }
-unsigned char CUR_CURSOR_STATE[2]={}; //{row, col}
+#define COL_NUM(col) 50*(col-1)+30 
+
+unsigned char CUR_CURSOR_STATE[2]={420, 30}; //{row, col}
 
 // By Mark Aligbe (ma2799) and Sabina Smajlaj (ss3912)
 
@@ -55,10 +55,10 @@ int main()
     for (row = 470; row > 370; row--){
 	    fbputchar('I', row, COL_NUM(i));
     }
-    updatedial(420, COL_NUM(i))
+    updatedial(420, COL_NUM(i)); 
   }
   //Initialize current cursor state for first column
-  CUR_CURSOR_STATE={420, 30};
+  
 
   /* Open the keyboard */
   if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
@@ -115,7 +115,7 @@ int main()
 			      &transferred, 100);
 			retToZ = packet.modifiers == 0 && packet.keycode[0] == 0;
 	    } while (!retToZ);
-	    if (CUR_CURSOR_STATE[1] == 580) //where does keycol get updated?
+	    if (keyCol == 580) //where does keycol get updated?
 	        continue; //stay there
 	    if (keyCol != 580) {
 	        keyCol= keyCol + 30; 
@@ -138,6 +138,7 @@ int main()
 	    if (keyCol != 30) //where does keycol get updated?
 	        keyCol = keyCol - 30;
 	        CUR_CURSOR_STATE[1] = keyCol;
+	    }
 	    else{
 	        continue; 
 	    }
@@ -181,23 +182,6 @@ int main()
       }
      
       
-      // Print the line
-      sprintf(keycode, "%c", cdec);
-      int inBeginSize = (keyRow - (MAX_SCREEN_Y + 1)) * 128 + keyCol + 1;
-      int inEndSize = INPUT_SIZE - ((keyRow - (MAX_SCREEN_Y + 1)) * 128 + keyCol);
-      char inBegin[inBeginSize];
-      char inEnd[inEndSize];
-      memset(inBegin, 0, inBeginSize);
-      memset(inEnd, 0, inEndSize);
-      printf("inBegin: %d, inEnd: %d\n", sizeof(inBegin), sizeof(inEnd));
-      strncpy(inBegin, input, inBeginSize - 1);
-      strcpy(inEnd, keycode);
-      strncat(inEnd, input + (inBeginSize - 1), inEndSize - 1);
-      memset(input, 0, INPUT_SIZE);
-      strcpy(input, inBegin);
-      strcat(input, inEnd);
-      //strncat(input, keycode, INPUT_SIZE - strlen(input) - 1);
-    }
   }
 
   return 0;

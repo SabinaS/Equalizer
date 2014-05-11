@@ -1,4 +1,4 @@
-1/*
+/*
  * fbputchar: Framebuffer character generator
  *
  * Assumes 32bpp
@@ -31,7 +31,22 @@ struct fb_var_screeninfo fb_vinfo;
 struct fb_fix_screeninfo fb_finfo; 
 unsigned char *framebuffer;
 static unsigned char font[];
-unsigned char dials[] = {[420, 30, 31], [420, 80, 72], [420, 130, 150], [420, 180, 250], [420, 230, 440], [420, 280, 630], [420, 330, 1000], [420, 380, 2500], [420, 430, 5000], [420, 480, 8000], [420, 530, 14000], [420, 580, 20000]}; //each inner array represents [row, column, frequency] /* future TODO: change to structs */
+struct dial_values dials[12]; 
+
+/*struct dial_values dials[] = {
+    {.row=420, .col=30, .freq=31}, 
+    {.row=420, .col=80, .freq=72}, 
+    {.row=420, .col=130, .freq=150}, 
+    {.row=420, .col=180, .freq=250}, 
+    {.row=420, .col=230, .freq=440}, 
+    {.row=420, .col=280, .freq=630}, 
+    {.row=420, .col=330, .freq=1000}, 
+    {.row=420, .col=380, .freq=2500}, 
+    {.row=420, .col=430, .freq=5000}, 
+    {.row=420, .col=480, .freq=8000}, 
+    {.row=420, .col=530, .freq=14000}, 
+    {.row=420, .col=580, .freq=20000} }; //each inner array represents [row, column, frequency] 
+*/
 
 /*
  * Open the framebuffer to prepare it to be written to.  Returns 0 on success
@@ -53,8 +68,14 @@ int fbopen()
   framebuffer = mmap(0, fb_finfo.smem_len, PROT_READ | PROT_WRITE,
 		     MAP_SHARED, fd, 0);
   if (framebuffer == (unsigned char *)-1) return FBOPEN_MMAP;
-
+  
+    dials[0].row = 420;
+    dials[0].col = 30;
+    dials[0].freq = 31;
+    //TODO: complete the rest
+    
   return 0;
+
 }
 
 /*
@@ -96,10 +117,10 @@ void updatedial(int row, int col)
 {
   int i; 
   fbputchar('*', row, col-1);
-  fbputchar('*', row, col+1)
+  fbputchar('*', row, col+1); 
   for(i = 0; i < 12; i++){
-  	if(dials[i][1]  == col){
-		dials[i][0]= row; 
+  	if(dials[i].col  == col){
+		dials[i],row = row; 
 	}
   }
 }

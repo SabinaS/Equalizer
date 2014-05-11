@@ -7,7 +7,7 @@ TARFILES = Makefile lab2.c \
 	usbkeyboard.h usbkeyboard.c
 
 lab2 : $(OBJECTS)
-	cc $(CFLAGS) -o lab2 $(OBJECTS) -lusb-1.0 -pthread -lm
+	cc $(CFLAGS) -o lab2 $(OBJECTS) -L /lib/arm-linux-gnueabihf -lusb-1.0 -pthread -lm
 
 lab2.tar.gz : $(TARFILES)
 	rm -rf lab2

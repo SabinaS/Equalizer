@@ -1,5 +1,5 @@
 #ifndef _FBPUTCHAR_H
-#  define _FBPUTCHAR_H
+#define _FBPUTCHAR_H
 
 #define FBOPEN_DEV -1          /* Couldn't open the device */
 #define FBOPEN_FSCREENINFO -2  /* Couldn't read the fixed info */
@@ -16,6 +16,14 @@ extern void fbputs(const char *, int, int);
 extern void fbclearlines(int, int);
 extern void fbputpacket(char *, int *);
 extern void updatedial(int, int);
-extern char* dials; 
+ 
+
+struct dial_values{
+  int row; 
+  int col; 
+  int freq; 
+};
+
+extern struct dial_values dials[12];
 
 #endif
