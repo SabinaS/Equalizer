@@ -1,13 +1,13 @@
 CFLAGS = -Wall
 
-OBJECTS = lab2.o fbputchar.o usbkeyboard.o
+OBJECTS = lab2.o fbputchar.o 
 
 TARFILES = Makefile lab2.c \
 	fbputchar.h fbputchar.c \
-	usbkeyboard.h usbkeyboard.c
+	
 
 lab2 : $(OBJECTS)
-	g++ $(CFLAGS) -o lab2 $(OBJECTS) -L/lib/arm-linux-gnueabihf -lusb-1.0 -pthread -lm
+	cc $(CFLAGS) -o lab2 $(OBJECTS) -lm
 
 lab2.tar.gz : $(TARFILES)
 	rm -rf lab2
@@ -16,9 +16,8 @@ lab2.tar.gz : $(TARFILES)
 	tar zcf lab2.tar.gz lab2
 	rm -rf lab2
 
-lab2.o : lab2.c fbputchar.h usbkeyboard.h
+lab2.o : lab2.c fbputchar.h 
 fbputchar.o : fbputchar.c fbputchar.h
-usbkeyboard.o : usbkeyboard.c usbkeyboard.h
 
 .PHONY : clean
 clean :
