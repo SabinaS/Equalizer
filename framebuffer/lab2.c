@@ -1,3 +1,6 @@
+/* Draws equalizer bands and dials and handles keyboard presses 
+ */
+
 #include "fbputchar.h"
 #include <stdio.h>
 #include <stdlib.h>
