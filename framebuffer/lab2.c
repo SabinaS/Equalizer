@@ -163,7 +163,7 @@ int main()
 	    if (keyRow == 470)
 	        continue;
 	    else if (keyRow != 470) {
-	        keyRow= keyRow - 4;
+	        keyRow= keyRow + 4;
 	        CUR_CURSOR_STATE[0] = keyRow;
 	        updatedial(keyRow, keyCol);
 	    }
@@ -181,7 +181,7 @@ int main()
 	     if (keyRow == 370)
 	        continue;
 	    else if (keyRow != 370) {
-	        keyRow= keyRow + 4;
+	        keyRow= keyRow - 4;
 	        CUR_CURSOR_STATE[0] = keyRow;
 	        updatedial(keyRow, keyCol);
 	    }
