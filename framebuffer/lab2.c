@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "usbkeyboard.h"
+#include <pthread.h>
 
 #define BUFFER_SIZE 128
 #define INPUT_SIZE 2 * 128 + 1
@@ -13,6 +14,7 @@
 #define ROW_2 46
 #define COL_NUM(col) 50*(col-1)+30 
 
+int top_line_pos = 2;
 unsigned char CUR_CURSOR_STATE[2]={420, 30}; //{row, col}
 
 // By Mark Aligbe (ma2799) and Sabina Smajlaj (ss3912)
@@ -24,7 +26,8 @@ unsigned char CUR_CURSOR_STATE[2]={420, 30}; //{row, col}
  * http://www.thegeekstuff.com/2011/12/c-socket-programming/
  * 
  */
-
+pthread_t network_thread;
+void *network_thread_f(void *);
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
@@ -66,6 +69,10 @@ int main()
     exit(1);
   }
 
+  
+  /* Start the network thread */
+  pthread_create(&network_thread, NULL, network_thread_f, NULL);
+  
   // The position of the cursor
   int keyRow = 420, keyCol = 30;
   // The array holding the user input
@@ -179,10 +186,13 @@ int main()
 	        updatedial(keyRow, keyCol);
 	    }
         continue;
-      }
-     
-      
+      }    
   }
+   /* Terminate the network thread */
+  pthread_cancel(network_thread);
+
+  /* Wait for the network thread to finish */
+  pthread_join(network_thread, NULL);
 
   return 0;
 }
@@ -202,6 +212,20 @@ void clear_pos(int pos, char *buf)
         buf[pos] = 0;
 }
 
+void *network_thread_f(void *ignored)
+{
+  char recvBuf[BUFFER_SIZE] = {0};
+  int n;
+  /* Receive data */
+  while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
+    recvBuf[n] = '\0';
+    printf("%s", recvBuf);
+    fbputpacket(recvBuf, &top_line_pos); //wrapping here for screen
+    memset(recvBuf, 0, BUFFER_SIZE);
+  }
+
+  return NULL;
+}
 
 
 
